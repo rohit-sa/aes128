@@ -44,6 +44,6 @@ def mulInv_GF2(y):
 	x = x[:i+2]			
 	return x[i+1][1]
 	
-def bit_scrb(b):
+def bit_scramble(b):
 	x = [[0 for j in range(8)] for i in range(8)] 
 	
