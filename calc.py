@@ -9,9 +9,9 @@ ror = lambda val, i: \
     (val << (8-(i%8)) & (0xff))
 
 def	arrayBits(exp):
-	count = exp.bit_length()
+	count = int(exp).bit_length()
 	bit_pos = []
-	bit_exp = bin(exp)[2:(2+exp.bit_length())]
+	bit_exp = bin(exp)[2:(2+count)]
 	for bit in bit_exp:
 		count = count - 1
 		if bit == '1':

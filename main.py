@@ -1,18 +1,32 @@
-#input a file with characters output bin file ?
-#store the charaters into state array only 16 bytes at a time
-#abcdefghijklmnop =>[('a','e','i','m'),('b','f','j','n'),('c','g','k','o'),('d','h','l','p')] but in hex
-	
 # Start of Code
-
 
 import numpy as np
 import calc as calc
 import encryption as en
 import decryption as de
+import struct
 
 
-
-
+def outBinFile(state,path):
+	outputFileHandle = open(path,'ab')
+	for i in state:
+		outputFileHandle.write(struct.pack('B',i))
+	
+def inBinFile(path):
+	with open(path,'rb') as inputFileHandle:
+		inData = inputFileHandle.read()
+	hexData =[]
+	inputFileHandle.close()
+	for sublist in list(inData):
+		for i in sublist:
+			hexData.append(struct.unpack('B',i))
+	
+	cipher = []
+	cipherText = raw_input("16 byte cipher: ")
+	for i in list(cipherText[:16]):
+		cipher.append(ord(i))
+	return (hexData, cipher)	
+	
 def outTextFile(state,path):
 	outputFileHandle = open(path,'a')
 	for i in state:
@@ -28,7 +42,6 @@ def inPlainTextFile(path):
 		for i in sublist:
 			hexData.append(ord(i))
 
-
 	while (len(hexData) % 16) != 0:
 		hexData.append(32)
 	cipher = []
@@ -37,7 +50,7 @@ def inPlainTextFile(path):
 		cipher.append(ord(i))
 	return (hexData, cipher)
 
-
+	
 def g(inData,round):
 	outData = inData[1:]
 	outData.append(inData[0])
@@ -85,7 +98,11 @@ StateArray = []
 choice = raw_input("1.Encrypt\n2.Decrypt\nEnter 1 or 2: ")
 inpath = raw_input("Enter inpath: ")
 outpath = raw_input("Enter outpath: ")
-(inputText,cipherKey) = inPlainTextFile(inpath)	
+if choice == '1':
+	(inputText,cipherKey) = inPlainTextFile(inpath)	
+else:
+	(inputText,cipherKey) = inBinFile(inpath)	
+	
 cipherKeyArray = np.asarray(cipherKey).reshape(4,4).T
 keyWord = []
 keyWord = cipherKeyArray.T.tolist()
@@ -97,7 +114,7 @@ for i in range(len(inputText)/16):
 		StateArray = en.encrypt(StateArray,S_box,keys)
 		npArray = np.array(StateArray).T.tolist()
 		out = [value for rows in npArray for value in rows]
-		outTextFile(out,outpath)
+		outBinFile(out,outpath)
 	else:
 		StateArray = np.array(StateArray).T.tolist()
 		StateArray = de.decrypt(StateArray,inv_S_box,keys)
