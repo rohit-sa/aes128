@@ -94,31 +94,46 @@ def genTables():
 
 	return (SBox, inv_SBox)
 
-StateArray = []
-choice = raw_input("1.Encrypt\n2.Decrypt\nEnter 1 or 2: ")
-inpath = raw_input("Enter inpath: ")
-outpath = raw_input("Enter outpath: ")
-if choice == '1':
-	(inputText,cipherKey) = inPlainTextFile(inpath)	
-else:
-	(inputText,cipherKey) = inBinFile(inpath)	
-	
-cipherKeyArray = np.asarray(cipherKey).reshape(4,4).T
-keyWord = []
-keyWord = cipherKeyArray.T.tolist()
-(S_box, inv_S_box) = genTables()
-keys = keyExpansion_G(keyWord)
-for i in range(len(inputText)/16):
-	StateArray = np.asarray(inputText[16*i:16*(i+1)]).reshape(4,4).tolist()
+def main():
+	StateArray = []
+	choice = raw_input("1.Encrypt\n2.Decrypt\nEnter 1 or 2: ")
+	inpath = raw_input("Enter inpath: ")
+	outpath = raw_input("Enter outpath: ")
 	if choice == '1':
-		StateArray = en.encrypt(StateArray,S_box,keys)
-		npArray = np.array(StateArray).T.tolist()
-		out = [value for rows in npArray for value in rows]
-		outBinFile(out,outpath)
+		(inputText,cipherKey) = inPlainTextFile(inpath)	
 	else:
-		StateArray = np.array(StateArray).T.tolist()
-		StateArray = de.decrypt(StateArray,inv_S_box,keys)
-		npArray = np.array(StateArray).tolist()
-		out = [value for rows in npArray for value in rows]
-		outTextFile(out,outpath)
+		(inputText,cipherKey) = inBinFile(inpath)	
+
+	if(len(cipherKey) < 16):
+		cipherKey = cipherKey + [0 for i in range(16 - len(cipherKey))]
+	else:
+		cipherKey = cipherKey[:16]
+		
+	cipherKeyArray = np.asarray(cipherKey).reshape(4,4).T
+	keyWord = []
+	keyWord = cipherKeyArray.T.tolist()
+	global S_box, inv_S_box
+	(S_box, inv_S_box) = genTables()
+	keys = keyExpansion_G(keyWord)
+	for i in range(len(inputText)/16):
+		StateArray = np.asarray(inputText[16*i:16*(i+1)]).reshape(4,4).tolist()
+		if choice == '1':
+			StateArray = en.encrypt(StateArray,S_box,keys)
+			npArray = np.array(StateArray).T.tolist()
+			out = [value for rows in npArray for value in rows]
+			outBinFile(out,outpath)
+		else:
+			StateArray = np.array(StateArray).T.tolist()
+			StateArray = de.decrypt(StateArray,inv_S_box,keys)
+			npArray = np.array(StateArray).tolist()
+			out = [value for rows in npArray for value in rows]
+			outTextFile(out,outpath)
+	return 0;
+
+if __name__ == "__main__":
+	if(main() == 0):
+		print("Execution sucessful")
+	else:
+		print("Fail")	
+
 	
